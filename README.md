@@ -40,8 +40,8 @@ them and submit quotations**.
 
 ## Live demo
 
-**App:** [frontend-sigma-six-18.vercel.app](https://frontend-sigma-six-18.vercel.app)
-**API / Swagger:** [rfq-marketplace-api.onrender.com/swagger](https://rfq-marketplace-api.onrender.com/swagger)
+**App:** [rfq-marketplace-frontend.vercel.app](https://rfq-marketplace-frontend.vercel.app/)
+**API / Swagger:** [b2b-rfq-marketplace-915g.onrender.com/swagger](https://b2b-rfq-marketplace-915g.onrender.com/swagger)
 
 Frontend on Vercel, API on Render, database on Neon — see [Deployment](#deployment) for how it's
 wired together, or `docker compose up` for the whole stack in one command locally (see
@@ -546,8 +546,8 @@ The two lanes run in parallel; images only build once both are green.
 Live now — see [Live demo](#live-demo) for the URLs. The deployed shape:
 
 ```
-Next.js  ──►  Vercel        (frontend-sigma-six-18.vercel.app)
-ASP.NET  ──►  Render         (rfq-marketplace-api.onrender.com/swagger, built from backend/RfqMarketplace.Api/Dockerfile)
+Next.js  ──►  Vercel        (rfq-marketplace-frontend.vercel.app)
+ASP.NET  ──►  Render         (b2b-rfq-marketplace-915g.onrender.com/swagger, built from backend/RfqMarketplace.Api/Dockerfile)
 Postgres ──►  Neon
 ```
 
