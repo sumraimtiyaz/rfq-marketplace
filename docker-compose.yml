@@ -1,0 +1,67 @@
+name: rfq-marketplace
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rfq-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-rfq_marketplace}
+    ports:
+      # Host port only. Other services reach Postgres on the internal network at 5432,
+      # so changing this never affects them - it is purely for psql/GUI clients on your machine.
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-rfq_marketplace}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: RfqMarketplace.Api/Dockerfile
+    container_name: rfq-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;Database=${POSTGRES_DB:-rfq_marketplace};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      JWT__KEY: ${JWT_KEY:?set JWT_KEY in .env - it must be at least 32 characters}
+      JWT__COOKIESECURE: ${JWT_COOKIE_SECURE:-false}
+      JWT__COOKIESAMESITE: ${JWT_COOKIE_SAMESITE:-Lax}
+      SWAGGER__ENABLED: ${SWAGGER_ENABLED:-true}
+      DATABASE__SEEDDEMODATA: ${SEED_DEMO_DATA:-true}
+      # The browser reaches the API through the Next.js proxy, so this list only matters for
+      # tools calling the API directly with credentials.
+      CORS__ALLOWEDORIGINS__0: http://localhost:${FRONTEND_PORT:-3000}
+    ports:
+      - "${API_PORT:-5080}:8080"
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # `next build` serialises the rewrite destination into the routes manifest, so this has
+        # to be set at build time as well as at runtime. Both values must agree.
+        BACKEND_URL: http://api:8080
+    container_name: rfq-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      # Container-to-container: the proxy in next.config.ts forwards /api/* here.
+      BACKEND_URL: http://api:8080
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+
+volumes:
+  postgres-data:

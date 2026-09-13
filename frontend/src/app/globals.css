@@ -1,0 +1,233 @@
+@import "tailwindcss";
+
+/*
+  Design tokens.
+
+  Slate carries structure, indigo carries action, and amber/rose stay reserved for deadline
+  urgency and destructive steps so those never compete for attention.
+
+  Surfaces are separated by elevation as well as by line: a flat border-only UI reads as a
+  wireframe, while a shadow ramp tells you what sits on top of what without adding noise.
+*/
+@theme {
+  /* Surfaces, lightest to heaviest */
+  --color-canvas: #f7f8fa;
+  --color-canvas-sunken: #f1f3f6;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+
+  --color-line: #e6e9ee;
+  --color-line-strong: #d3d8e0;
+
+  /* Text, strongest to faintest */
+  --color-ink: #0d1117;
+  --color-ink-muted: #596273;
+  --color-ink-subtle: #8a93a3;
+
+  /* Action */
+  --color-brand: #4f46e5;
+  --color-brand-hover: #4338ca;
+  --color-brand-active: #3730a3;
+  --color-brand-soft: #eef1ff;
+  --color-brand-softer: #f6f7ff;
+  --color-brand-line: #c9cffa;
+
+  /* Status */
+  --color-positive: #0b7a52;
+  --color-positive-soft: #e6f6ef;
+  --color-positive-line: #b6e3ce;
+
+  --color-warning: #9a5b06;
+  --color-warning-soft: #fdf3e2;
+  --color-warning-line: #f2ddb4;
+
+  --color-danger: #b42318;
+  --color-danger-soft: #fdeeec;
+  --color-danger-line: #f6cfcb;
+
+  --color-info: #1f5fa9;
+  --color-info-soft: #eaf2fc;
+  --color-info-line: #c3dbf5;
+
+  /* Radii */
+  --radius-field: 0.625rem;
+  --radius-card: 0.875rem;
+  --radius-panel: 1.125rem;
+
+  /*
+    Elevation. Two-layer shadows - a tight contact shadow plus a wider diffuse one - read as
+    real depth, where a single large blur just looks smudged.
+  */
+  --shadow-xs: 0 1px 2px 0 rgb(13 17 23 / 0.04);
+  --shadow-sm: 0 1px 2px 0 rgb(13 17 23 / 0.05), 0 1px 3px 0 rgb(13 17 23 / 0.05);
+  --shadow-md: 0 2px 4px -1px rgb(13 17 23 / 0.05), 0 6px 12px -2px rgb(13 17 23 / 0.07);
+  --shadow-lg: 0 4px 8px -2px rgb(13 17 23 / 0.06), 0 16px 28px -6px rgb(13 17 23 / 0.1);
+  --shadow-xl: 0 8px 16px -4px rgb(13 17 23 / 0.08), 0 28px 48px -12px rgb(13 17 23 / 0.16);
+
+  /* Motion. Short and eased-out: interfaces should feel immediate, not animated at. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+  /* One consistent focus treatment for every interactive element. */
+  *:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  /* Headings read better slightly tightened; body text does not. */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.018em;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-soft);
+    color: var(--color-brand-active);
+  }
+}
+
+/* Number inputs: the spinners fight with right-aligned currency values. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* The native date picker indicator is invisible against our field styling. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity var(--duration-fast) var(--ease-out-soft);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------- animations */
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+.animate-rise-in {
+  animation: rise-in var(--duration-base) var(--ease-out-soft) both;
+}
+
+.animate-fade-in {
+  animation: fade-in var(--duration-base) var(--ease-out-soft) both;
+}
+
+.animate-toast-in {
+  animation: toast-in 220ms var(--ease-out-soft) both;
+}
+
+.animate-dialog-in {
+  animation: dialog-in 160ms var(--ease-out-soft) both;
+}
+
+/* Staggers a list so rows arrive in sequence rather than all at once. */
+.stagger > * {
+  animation: rise-in var(--duration-base) var(--ease-out-soft) both;
+}
+
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 40ms; }
+.stagger > *:nth-child(3) { animation-delay: 80ms; }
+.stagger > *:nth-child(4) { animation-delay: 120ms; }
+.stagger > *:nth-child(5) { animation-delay: 160ms; }
+.stagger > *:nth-child(n + 6) { animation-delay: 200ms; }
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-canvas-sunken);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+/*
+  Respect the OS setting. Anyone who has asked for less motion gets none of the above -
+  the interface still works, it just arrives without movement.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .skeleton::after {
+    animation: none;
+  }
+}
